@@ -12,10 +12,24 @@ import 'package:flutter/material.dart';
       (
         title: const Text('Pantalla Sec'),
       ),
-      body: const Center
+      body: Center
       (
-        child: Text('Bienvenido a otra pantalla'),
-        
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Bienvenido a otra pantalla'),
+            //añadir mas cosas
+            // por ejemplo, un botón que muestre un mensaje al pulsarlo
+            ElevatedButton(
+              onPressed: () 
+          {
+            // Mostrar un mensaje al pulsar el botón
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('¡Botón pulsado!')),
+            );
+          },
+          child: Text('Pulsame'),
+        ),
       ),
     );
   }
