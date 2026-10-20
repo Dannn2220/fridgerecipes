@@ -30,6 +30,8 @@ import 'package:flutter/material.dart';
           },
           child: Text('Pulsame'),
         ),
+          ],
+        ),
       ),
     );
   }
