@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fridgerecipes/sec.dart';
 
 void main() {
   runApp(const MainApp());
@@ -31,7 +32,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   final TextEditingController _ctrlTexto = TextEditingController();
 
   // Variable donde se guardará el texto que se mostrara abajo
-//  String _textoMostrado = '';
+  //  String _textoMostrado = '';
   bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
 
   @override
@@ -188,8 +189,21 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                   child: const Text('OK'),
                 ),
                 const SizedBox(height: 16),
+                //boton para ir a otra pantalla Ultima actividad 15/10/26
+                ElevatedButton
+                (
+                  onPressed: () 
+                  {
+                    Navigator.push
+                    (
+                      context,
+                      MaterialPageRoute(builder: (context) => const PantallaSecundaria()),
+                    );
+                  },
+                  child: const Text('Siguiente'),
+                ),
 
-/*                //timer que actualice cada 500 milisegundos el color del texto mostrado
+/*              //timer que actualice cada 500 milisegundos el color del texto mostrado
                 const SizedBox(height: 16),
                 StreamBuilder<Color>
                 (
