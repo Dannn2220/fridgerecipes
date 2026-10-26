@@ -197,7 +197,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                     Navigator.push
                     (
                       context,
-                      MaterialPageRoute(builder: (context) => const PantallaSecundaria()),
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
                     );
                   },
                   child: const Text('Siguiente'),
