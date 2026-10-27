@@ -55,6 +55,12 @@ class _LoginScreenState extends State<LoginScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: 
           [
+            Image.asset
+            (
+              'assets/images/14_10_2026 10_36_20 p. m..png',
+              width: 200,
+              height: 100,
+            ),
             TextFormField
             (
               controller: _emailController,
