@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen>
             TextFormField(
               controller: _passwordController,
               decoration: const InputDecoration(
-                labelText: 'Password',
+                labelText: 'password',
                 border: OutlineInputBorder(),
               ),
               obscureText: true,
@@ -91,21 +91,21 @@ class _LoginScreenState extends State<LoginScreen>
                   return 'Porfas ingresa tu password';
                 }
                 if(value.length < 6)
-                {}
+                {
+                  return 'Tu password debe contener al menos caracteres';
+                }
+                return null;
               },
-            )
-            ElevatedButton(
-              onPressed: () 
-          {
-            // Mostrar un mensaje al pulsar el botón
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('¡Botón pulsado!')),
-            );
-          },
-          child: Text('Pulsame'),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton
+            (
+              onPressed: _submitLogin,
+              child: const Text('Iniciar sesion'),
         ),
           ],
         ),
+      ),
       ),
     );
   }
