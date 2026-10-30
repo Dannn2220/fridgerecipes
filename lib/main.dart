@@ -1,53 +1,59 @@
-//login
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:bcrypt/bcrypt.dart';
+//import 'package:fridgerecipes/main.dart';
 import 'package:fridgerecipes/sec.dart';
+//import 'package:fridgerecipes/sec.dart';
 
-class LoginScreen extends StatefulWidget
+
+void main() 
 {
-  const LoginScreen({super.key});
+  runApp(const MainApp());
+}
+class MainApp extends StatelessWidget {
+  const MainApp({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-/*
-AGREGAR ESTO:
-string _paswhash = r'elhashdelapsw'; paara guardar el hash de la contra y despues mostrarla
-void main(){
-debugprint(bcrypt.hashpw(_password, bcrypt.gensalt())) para que imprima la contra hasheada; 
-mainApp ....?
-}*/
-
-class _LoginScreenState extends State<LoginScreen>
-{
-  //user y hash
-  final String uservalido = "admin";
-  final String pswHash = r'$2a$10$BJ7gzZ3dlE8haHacBnmdPOV5C9fp7Wl8kiJL7rMty.mrto4e9P7HW';//hash de la contra
-
-  final userController = TextEditingController();
-  final pswController = TextEditingController();
-
-  void _login()
+  Widget build(BuildContext context) 
   {
-    String user = userController.text.trim();
-    String pswIn = pswController.text.trim();
-
-    bool pswbien = BCrypt.checkpw(pswIn, pswHash);
-
-    if(user == uservalido && pswbien)
-    {
-      Navigator.push
+    return MaterialApp
+    (
+      home: PantallaPrincipal(),
+      theme: ThemeData
       (
-        context,
-        MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
-      );
-    }
-    else
-    {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid user or password")),
-      );
-    }
+        brightness: Brightness.light, primaryColor: Colors.red,
+      ),
+      darkTheme: ThemeData
+      (
+        brightness: Brightness.dark,
+      ),
+    );
+  }
+}
+
+// Convertimos esta parte en StatefulWidget para que la pantalla pueda redibujarse
+class PantallaPrincipal extends StatefulWidget 
+{
+  const PantallaPrincipal({super.key});
+
+  @override
+  State<PantallaPrincipal> createState() => _PantallaPrincipalState();
+}
+
+class _PantallaPrincipalState extends State<PantallaPrincipal> 
+{
+  // Controlador para leer lo que se escribe en la caja de texto
+  final TextEditingController _ctrlTexto = TextEditingController();
+
+  // Variable donde se guardará el texto que se mostrara abajo
+  //  String _textoMostrado = '';
+  bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
+
+  @override
+  void dispose() 
+  {
+    // Limpiar el controlador al destruir el widget
+    _ctrlTexto.dispose();
+    super.dispose();
   }
 
   @override
@@ -55,101 +61,187 @@ class _LoginScreenState extends State<LoginScreen>
   {
     return Scaffold
     (
-      appBar: AppBar
+      body: Center
       (
-        title: const Text('LoginApp')
-      ),
-      body: Padding
-      (
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          child: Column
+        child: SingleChildScrollView( // Evita errores de espacio si el teclado se abre
+          child: Padding
           (
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: 
-          [
-            Text('FridgeRecipes'),
-            Image.asset
+            padding: const EdgeInsets.all(16.0), // Margen a los lados para la caja de texto
+            child: Column
             (
-              'assets/images/14_10_2026 10_36_20 p. m..png',
-              width: 200,
-              height: 100,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>
+              [
+                 Switch
+                (
+                  value: _isCupertinoStyle, // Valor inicial del switch
+                  onChanged: (bool value) 
+                  {
+                    // si el value cambia a true, cambia el estilo a cupertino
+                    setState(() {
+                      _isCupertinoStyle = value;
+                    });
+
+                  },
+                ),
+                const SizedBox(height: 20),
+                //dentro de un stack, para que muestre el texto sobre otro texto, y la imagen al frente de ambos textos
+                Stack
+                (
+                  alignment: Alignment.center,
+                  children: <Widget>
+                  [
+                    const Text
+                    (
+                      'Es un texto en un stack',
+                      style: TextStyle
+                      (
+                        fontSize: 27.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color.fromARGB(255, 207, 101, 177),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text
+                    (
+                      'Es un texto en un stack',
+                      style: TextStyle
+                      (
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: Color.fromARGB(255, 84, 133, 215),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    Image.asset
+                    (
+                      'assets/images/e3da939bd48f9abb31fea4557fa9a5f1.gif',
+                      width: 200,
+                      height: 100,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Asigna el controlador al TextField
+                TextField
+                (
+                  controller: _ctrlTexto,
+                  decoration: const InputDecoration
+                  (
+                    border: OutlineInputBorder(),
+                    labelText: 'Inserta un texto',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton
+                (
+                  onPressed: () 
+                  {
+                    // Al presionar el botón, muestre una alerta del estilo segun el switch
+                    if (_isCupertinoStyle) 
+                    {
+                      // Muestra un diálogo de estilo Cupertino
+                      showCupertinoDialog
+                      (
+                        context: context,
+                        builder: (BuildContext context) => CupertinoAlertDialog
+                        (
+                          title: const Text('Alerta en Cupertino'),
+                          content: const Text('Esto es una alerta de estilo Cupertino.'),
+                          actions: <Widget>
+                          [
+                            CupertinoDialogAction
+                            (
+                              onPressed: () 
+                              {
+                                Navigator.of(context).pop(); //cerrar alerta
+                              },
+                              child: const Text('Cerrar'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } 
+                    else 
+                    {
+                      // Muestra un diálogo de estilo Material
+                      showDialog
+                      (
+                        context: context,
+                        builder: (BuildContext context)
+                        {
+                          return AlertDialog
+                          (
+                            title: const Text('Alerta en Material'),
+                            content: const Text('Esto es una alerta de estilo Material.'),
+                            actions: <Widget>
+                            [
+                              TextButton
+                              (
+                                onPressed: () 
+                                {
+                                  Navigator.of(context).pop(); // Cierra la alerta
+                                },
+                                child: const Text('Cerrar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+/*                    setState(() 
+                    {
+                      if (_ctrlTexto.text.isNotEmpty) 
+                      {
+                        _textoMostrado = _ctrlTexto.text;
+                      }
+                    });*/
+                  },
+                  child: const Text('OK'),
+                ),
+                const SizedBox(height: 16),
+                //boton para ir a otra pantalla Ultima actividad 15/10/26
+                ElevatedButton
+                (
+                  onPressed: () 
+                  {
+                    Navigator.push
+                    (
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: const Text('Siguiente'),
+                ),
+/*              //timer que actualice cada 500 milisegundos el color del texto mostrado
+                const SizedBox(height: 16),
+                StreamBuilder<Color>
+                (
+                  stream: Stream.periodic(const Duration(milliseconds: 500), (count) 
+                  {
+                    // Cambia el color cada 500 ms
+                    return count % 2 == 0 ? Colors.red : Colors.blue;
+                  }),
+                  builder: (context, snapshot)
+                  {
+                    return Text
+                    (
+                      _textoMostrado,
+                      style: TextStyle
+                      (
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: snapshot.data ?? Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    );
+                  },
+                ),*/
+              ],
             ),
-            TextField
-            (
-              controller: userController,
-              decoration: const InputDecoration
-              (
-                labelText: "User:",
-                border: OutlineInputBorder()
-              )
-            ),
-            const SizedBox(height: 15),
-            TextField
-            (
-              controller: pswController,
-              obscureText: true,
-              decoration: const InputDecoration
-              (
-                labelText: "password",
-                border: OutlineInputBorder()
-              )
-            ),
-            const SizedBox(height: 25),
-            SizedBox(width: double.infinity,child: 
-            ElevatedButton(onPressed: _login, child: const Text("Entrar")),
-            )
-/*            TextFormField
-            (
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Correo electronico',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty)
-                {
-                  return 'Porfas ingresa un correo';
-                }
-                if(!value.contains('@'))
-                {
-                  return 'Ingresa un correo valido';
-                }
-                return null;
-              },
-            ),
-            const SizedBox( height: 16),
-            //campo de password
-            TextFormField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'password',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-              validator: (value)
-              {
-                if (value == null || value.isEmpty)
-                {
-                  return 'Porfas ingresa tu password';
-                }
-                if(value.length < 6)
-                {
-                  return 'Tu password debe contener al menos caracteres';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton
-            (
-              onPressed: _submitLogin,
-              child: const Text('Iniciar sesion'),
-            ),
-*/          ],
+          ),
         ),
-      ),
       ),
     );
   }
