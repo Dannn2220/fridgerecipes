@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 //import 'package:fridgerecipes/main.dart';
-import 'package:fridgerecipes/sec.dart';
+import 'package:fridgerecipes/login.dart';
 //import 'package:fridgerecipes/sec.dart';
 
 class Favoritos extends StatelessWidget 
