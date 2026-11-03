@@ -4,7 +4,6 @@ import 'package:bcrypt/bcrypt.dart';
 import 'package:fridgerecipes/favoritos.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 
 /* crear un json, guardar arreglos con usuario, contra, guardar al menos
 -texto de crear cuenta, para que guarde un usuario en un json
@@ -29,6 +28,13 @@ mainApp ....?
 //usar bcrypt o semillas aleatoriass
 class _LoginScreenState extends State<LoginScreen>
 {
+  @override
+void dispose()
+{
+  userController.dispose();
+  pswController.dispose();
+  super.dispose();
+}
 /*  //user y hash
   final String uservalido = "admin";
   final String pswHash = r'$2a$10$BJ7gzZ3dlE8haHacBnmdPOV5C9fp7Wl8kiJL7rMty.mrto4e9P7HW';//hash de la contra
@@ -36,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen>
   // Obtener la ubicación del archivo JSON
   Future<File> _obtenerArchivo() async
   {
-    final directorio = await getApplicationDocumentsDirectory();
+    final directorio = Directory.current;
 
     return File('${directorio.path}/usuarios.json');
   }
@@ -221,7 +227,9 @@ Future<void> _login() async
             const SizedBox(height: 25),
             SizedBox(width: double.infinity,child: 
             ElevatedButton(onPressed: _login, child: const Text("Entrar")),
-            )
+            ),
+            const SizedBox(height: 10),
+            TextButton(onPressed: _registrar, child: const Text("Registrar")),
 /*            TextFormField
             (
               controller: _emailController,

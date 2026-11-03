@@ -17,10 +17,12 @@ class MainApp extends StatelessWidget {
   {
     return MaterialApp
     (
+      themeMode: ThemeMode.dark,
       home: PantallaPrincipal(),
       theme: ThemeData
       (
-        brightness: Brightness.light, primaryColor: Colors.red,
+        brightness: Brightness.light, 
+        primaryColor: Colors.red,
       ),
       darkTheme: ThemeData
       (
