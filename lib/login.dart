@@ -5,7 +5,8 @@ import 'package:fridgerecipes/favoritos.dart';
 import 'dart:convert';
 import 'dart:io';
 
-/* crear un json, guardar arreglos con usuario, contra, guardar al menos
+/* act viernes 30102026
+crear un json, guardar arreglos con usuario, contra, guardar al menos
 -texto de crear cuenta, para que guarde un usuario en un json
 -al ingresar el usuario y password guardados, se inicie sesion
 -no es necesario crear otra pantalla, pero es opcional. (se hace mucho rollo)
