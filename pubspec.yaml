@@ -7,8 +7,11 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  bcrypt: ^1.2.0
   flutter:
     sdk: flutter
+  sqflite: ^2.4.5
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +22,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/recetas_inicial.json

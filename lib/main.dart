@@ -1,18 +1,41 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fridgerecipes/sec.dart';
+import 'package:fridgerecipes/login.dart';
+import 'package:fridgerecipes/services/spoonacular_services.dart';
+import 'dart:convert';
 
-void main() {
+/*
+opciones de api:
+-spoonacular API (mas completa), cuenta con endpoints especificos donde se puede filtrar por tipo de cocina
+o buscar directamente por ingredientesque el usuario selecciono
+04/11/26
+hacer  btone s con las operacines de get post put patch delete hacia la api, y mostrar los resultados en la pantalla principal, o en otra pantalla, segun el caso
+*/
+
+void main() 
+{
   runApp(const MainApp());
 }
-
-class MainApp extends StatelessWidget {
+class MainApp extends StatelessWidget 
+{
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
+  Widget build(BuildContext context) 
+  {
+    return MaterialApp
+    (
+      themeMode: ThemeMode.dark,
       home: PantallaPrincipal(),
+      theme: ThemeData
+      (
+        brightness: Brightness.light, 
+        primaryColor: Colors.red,
+      ),
+      darkTheme: ThemeData
+      (
+        brightness: Brightness.dark,
+      ),
     );
   }
 }
@@ -31,6 +54,282 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   // Controlador para leer lo que se escribe en la caja de texto
   final TextEditingController _ctrlTexto = TextEditingController();
 
+// Servicio de Spoonacular
+  final SpoonacularService _api = SpoonacularService();
+
+// Controladores para conectar al usuario
+  final TextEditingController _ctrlUsuario = TextEditingController();
+  final TextEditingController _ctrlNombre = TextEditingController();
+  final TextEditingController _ctrlApellido = TextEditingController();
+  final TextEditingController _ctrlCorreo = TextEditingController();
+  final TextEditingController _ctrlIngredientes =TextEditingController();
+
+  bool _cargandoGet = false;
+  Map<String, dynamic>? _resultadoGet;
+
+  bool _cargandoPost = false;
+  Map<String, dynamic>? _resultadoPost;
+
+  bool _cargandoPut = false;
+  Map<String, dynamic>? _resultadoPut;
+
+  bool _cargandoPatch = false;
+  Map<String, dynamic>? _resultadoPatch;
+
+  bool _cargandoDelete = false;
+  Map<String, dynamic>? _resultadoDelete;
+
+  // Variables para mostrar resultados
+  bool _cargando = false;
+  Map<String, dynamic>? _resultadoApi;
+
+  Future<void> _conectarUsuario() async 
+  {
+    setState(() 
+    {
+      _cargando = true;
+      _resultadoApi = null;
+    });
+
+    try 
+    {
+      final resultado = await _api.connectUser
+      (
+        nombreUsuario: _ctrlUsuario.text.trim(),
+        nombre: _ctrlNombre.text.trim(),
+        apellido: _ctrlApellido.text.trim(),
+        correo: _ctrlCorreo.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      setState(() 
+      {
+        _resultadoApi = resultado;
+      });
+
+    } 
+    catch (e) 
+    {
+      if (!mounted) return;
+
+      setState(() 
+      {
+        _resultadoApi = 
+        {
+          'error': e.toString(),
+        };
+      });
+    } 
+    finally 
+    {
+      if (mounted) 
+      {
+        setState(() 
+        {
+          _cargando = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _consultarRecetas() async 
+  {
+  setState(() {
+    _cargandoGet = true;
+    _resultadoGet = null;
+  });
+
+  try {
+    final resultado = await _api.getRecipes(
+      _ctrlIngredientes.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoGet = resultado;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoGet = {'error': e.toString()};
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargandoGet = false;
+      });
+    }
+  }
+}
+
+  Future<void> _enviarReceta() async 
+  {
+  setState(() {
+    _cargandoPost = true;
+    _resultadoPost = null;
+  });
+
+  try {
+    final resultado = await _api.postRecipe();
+
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoPost = resultado;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoPost = {'error': e.toString()};
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargandoPost = false;
+      });
+    }
+  }
+}
+
+  Future<void> _actualizarReceta() async 
+  {
+  setState(() {
+    _cargandoPut = true;
+    _resultadoPut = null;
+  });
+
+  try {
+    final resultado = await _api.putRecipe();
+
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoPut = resultado;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoPut = {'error': e.toString()};
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargandoPut = false;
+      });
+    }
+  }
+}
+
+  Future<void> _modificarReceta() async 
+  {
+  setState(() {
+    _cargandoPatch = true;
+    _resultadoPatch = null;
+  });
+
+  try {
+    final resultado = await _api.patchRecipe();
+
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoPatch = resultado;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoPatch = {'error': e.toString()};
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargandoPatch = false;
+      });
+    }
+  }
+}
+
+  Future<void> _crearElemento() async 
+  {
+  setState(() {
+    _cargandoDelete = true;
+    _resultadoDelete = null;
+  });
+
+  try {
+    final resultado = await _api.addMealPlanItem();
+
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoDelete = resultado;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoDelete = {'error': e.toString()};
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargandoDelete = false;
+      });
+    }
+  }
+}
+
+  Future<void> _eliminarElemento() async 
+  {
+  if (_api.mealPlanItemId == null) {
+    setState(() {
+      _resultadoDelete = {
+        'error': 'Primero debes crear un elemento.'
+      };
+    });
+    return;
+  }
+
+  setState(() {
+    _cargandoDelete = true;
+    _resultadoDelete = null;
+  });
+
+  try {
+    final resultado = await _api.deleteMealPlanItem(
+      _api.mealPlanItemId!,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoDelete = resultado;
+    });
+
+    if (resultado['statusCode'] == 200) {
+      _api.mealPlanItemId = null;
+    }
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _resultadoDelete = {'error': e.toString()};
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargandoDelete = false;
+      });
+    }
+  }
+}
+
   // Variable donde se guardará el texto que se mostrara abajo
   //  String _textoMostrado = '';
   bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
@@ -38,6 +337,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   @override
   void dispose() 
   {
+    _ctrlUsuario.dispose();
+    _ctrlNombre.dispose();
+    _ctrlApellido.dispose();
+    _ctrlCorreo.dispose();
+    _ctrlIngredientes.dispose();
     // Limpiar el controlador al destruir el widget
     _ctrlTexto.dispose();
     super.dispose();
@@ -177,7 +481,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                         },
                       );
                     }
-
 /*                    setState(() 
                     {
                       if (_ctrlTexto.text.isNotEmpty) 
@@ -202,7 +505,213 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                   },
                   child: const Text('Siguiente'),
                 ),
+                //mostrar boton con la operacion de mostrar algo traido de la api, usando los metodos de get post put patch y delete. FUNCION con future<map<string, dynamic>> y asi.
+                const Divider(height: 40),
+                const Text
+                (
+                  'CONEXIÓN CON SPOONACULAR',
+                  style: TextStyle
+                  (
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField
+                (
+                  controller: _ctrlUsuario,
+                  decoration: const InputDecoration
+                  (
+                    border: OutlineInputBorder(),
+                    labelText: 'Nombre de usuario',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField
+                (
+                  controller: _ctrlNombre,
+                  decoration: const InputDecoration
+                  (
+                    border: OutlineInputBorder(),
+                    labelText: 'Nombre',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField
+                (
+                  controller: _ctrlApellido,
+                  decoration: const InputDecoration
+                  (
+                    border: OutlineInputBorder(),
+                    labelText: 'Apellido',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField
+                (
+                  controller: _ctrlCorreo,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration
+                  (
+                    border: OutlineInputBorder(),
+                    labelText: 'Correo electrónico',
+                  ),
+                ),
+                const SizedBox(height: 15),
+                ElevatedButton
+                (
+                  onPressed: _cargando ? null : _conectarUsuario,
+                  child: Text
+                  (
+                    _cargando ? 'Conectando...' : 'Conectar usuario',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (_resultadoApi != null)
+                Container
+                (
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration
+                  (
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: SelectableText
+                  (
+                    const JsonEncoder.withIndent('  ')
+                    .convert(_resultadoApi),
+                  ),
+                ),
+                const Divider(height: 40),
 
+const Text(
+  'MÉTODO GET - CONSULTAR RECETAS',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+TextField(
+  controller: _ctrlIngredientes,
+  decoration: const InputDecoration(
+    labelText: 'Ingredientes',
+    hintText: 'Ejemplo: egg,tomato,cheese',
+  ),
+),
+
+ElevatedButton(
+  onPressed: _cargandoGet ? null : _consultarRecetas,
+  child: Text(
+    _cargandoGet ? 'Consultando...' : 'Consultar recetas',
+  ),
+),
+
+if (_resultadoGet != null)
+  SelectableText(
+    const JsonEncoder.withIndent('  ')
+        .convert(_resultadoGet),
+  ),
+
+  const Divider(height: 40),
+
+const Text(
+  'MÉTODO POST - ANALIZAR RECETA',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+ElevatedButton(
+  onPressed: _cargandoPost ? null : _enviarReceta,
+  child: Text(
+    _cargandoPost ? 'Enviando...' : 'Enviar receta',
+  ),
+),
+
+if (_resultadoPost != null)
+  SelectableText(
+    const JsonEncoder.withIndent('  ')
+        .convert(_resultadoPost),
+  ),
+
+  const Divider(height: 40),
+
+const Text(
+  'MÉTODO PUT - ACTUALIZAR RECETA',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+ElevatedButton(
+  onPressed: _cargandoPut ? null : _actualizarReceta,
+  child: Text(
+    _cargandoPut ? 'Enviando...' : 'Probar PUT',
+  ),
+),
+
+if (_resultadoPut != null)
+  SelectableText(
+    const JsonEncoder.withIndent('  ')
+        .convert(_resultadoPut),
+  ),
+
+const Divider(height: 40),
+
+const Text(
+  'MÉTODO PATCH - MODIFICAR RECETA',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+ElevatedButton(
+  onPressed: _cargandoPatch ? null : _modificarReceta,
+  child: Text(
+    _cargandoPatch ? 'Enviando...' : 'Probar PATCH',
+  ),
+),
+
+if (_resultadoPatch != null)
+  SelectableText(
+    const JsonEncoder.withIndent('  ')
+        .convert(_resultadoPatch),
+  ),
+const Divider(height: 40),
+
+const Text(
+  'MÉTODO DELETE - ELIMINAR ELEMENTO',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+ElevatedButton(
+  onPressed: _cargandoDelete ? null : _crearElemento,
+  child: const Text('Crear elemento de prueba'),
+),
+
+ElevatedButton(
+  onPressed: _cargandoDelete ? null : _eliminarElemento,
+  child: const Text('Eliminar elemento'),
+),
+
+if (_resultadoDelete != null)
+  SelectableText(
+    const JsonEncoder.withIndent('  ')
+        .convert(_resultadoDelete),
+  ),
+                /*
+                future<map<string, dynamic>> replacePost()
+                  nose que mas
+
+                 */
 /*              //timer que actualice cada 500 milisegundos el color del texto mostrado
                 const SizedBox(height: 16),
                 StreamBuilder<Color>
