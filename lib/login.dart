@@ -102,6 +102,8 @@ void dispose()
 
   if (existe)
   {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Este usuario ya existe")
@@ -126,6 +128,8 @@ void dispose()
 
   // Guardar los cambios
   await _guardarUsuarios(usuarios);
+
+  if (!mounted) return;
 
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
@@ -161,6 +165,8 @@ Future<void> _login() async
 
       if (correcto)
       {
+        if (!mounted) return;
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -172,6 +178,8 @@ Future<void> _login() async
       }
     }
   }
+
+  if (!mounted) return;
 
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
