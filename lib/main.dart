@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
+//import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fridgerecipes/login.dart';
+//import 'package:fridgerecipes/login.dart';
 import 'package:fridgerecipes/services/spoonacular_services.dart';
 import 'dart:convert';
 
@@ -141,9 +141,21 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   });
 
   try {
-    final resultado = await _api.getRecipes(
+    final resultado = await _api.getRecipes
+    (
       _ctrlIngredientes.text.trim(),
     );
+//PARA AGREGAR UN TEXTO A LO QUE MUESTRA LA API
+    if (resultado['data'] is List) 
+    {
+      for (var receta in resultado['data']) 
+      {
+        if (receta is Map && receta['title'] is String) 
+        {
+          receta['title'] = '${receta['title']} ';//aqui al ultimo puedo agregar otro texto aparte xd
+        }
+      }
+    }
 
     if (!mounted) return;
 
@@ -332,7 +344,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
 
   // Variable donde se guardará el texto que se mostrara abajo
   //  String _textoMostrado = '';
-  bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
+//  bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
 
   @override
   void dispose() 
@@ -363,6 +375,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>
               [
+                /*
                  Switch
                 (
                   value: _isCupertinoStyle, // Valor inicial del switch
@@ -375,6 +388,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
 
                   },
                 ),
+                
                 const SizedBox(height: 20),
                 //dentro de un stack, para que muestre el texto sobre otro texto, y la imagen al frente de ambos textos
                 Stack
@@ -505,11 +519,12 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                   },
                   child: const Text('Siguiente'),
                 ),
+                */
                 //mostrar boton con la operacion de mostrar algo traido de la api, usando los metodos de get post put patch y delete. FUNCION con future<map<string, dynamic>> y asi.
                 const Divider(height: 40),
                 const Text
                 (
-                  'CONEXIÓN CON SPOONACULAR',
+                  'CONEXIÓN CON SPOONACULAR API',
                   style: TextStyle
                   (
                     fontSize: 20,
@@ -597,32 +612,126 @@ TextField(
   controller: _ctrlIngredientes,
   decoration: const InputDecoration(
     labelText: 'Ingredientes',
-    hintText: 'Ejemplo: egg,tomato,cheese',
+    hintText: 'Ejemplo: egg,tomato',
   ),
 ),
 
-ElevatedButton(
+ElevatedButton
+(
   onPressed: _cargandoGet ? null : _consultarRecetas,
   child: Text(
     _cargandoGet ? 'Consultando...' : 'Consultar recetas',
   ),
 ),
+//hay que dar formato al json mostrado en pantalla, con indentacion de 2 espacios, y que sea seleccionable para copiarlo
 
-if (_resultadoGet != null)
-  SelectableText(
-    const JsonEncoder.withIndent('  ')
-        .convert(_resultadoGet),
+if (_resultadoGet != null &&
+    _resultadoGet!['data'] is List) ...[
+
+  const SizedBox(height: 15),
+
+  const Text(
+    'RESULTADOS DE RECETAS',
+    style: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+    ),
   ),
 
-  const Divider(height: 40),
+  ...(_resultadoGet!['data'] as List).map((receta) {
 
-const Text(
+    final ingredientesUsados =
+        receta['usedIngredients'] as List? ?? [];
+
+    final ingredientesFaltantes =
+        receta['missedIngredients'] as List? ?? [];
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: 
+          [
+            Text
+            (
+              '${receta['title']} XDXDXD',
+              style: const TextStyle
+              (
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text('Identificador: ${receta['id']}'),
+
+            Text
+            (
+              'Ingredientes disponibles: '
+              '${receta['usedIngredientCount']}',
+            ),
+
+            Text
+            (
+              'Ingredientes faltantes: '
+              '${receta['missedIngredientCount']}',
+            ),
+
+            const Divider(),
+
+            const Text
+            (
+              'Ingredientes que tienes:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            ...ingredientesUsados.map
+            (
+              (ingrediente) => Text
+              (
+                '• ${ingrediente['name']}',
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text
+            (
+              'Ingredientes que te faltan:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            ...ingredientesFaltantes.map
+            (
+              (ingrediente) => Text
+              (
+                '• ${ingrediente['name']}',
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }),
+],
+const Divider(height: 40),
+
+const Text
+(
   'MÉTODO POST - ANALIZAR RECETA',
   style: TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,
   ),
 ),
+
 
 ElevatedButton(
   onPressed: _cargandoPost ? null : _enviarReceta,
