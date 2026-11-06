@@ -123,8 +123,10 @@ class SpoonacularService {
 
   // PUT: probar el método sobre la ruta de búsqueda.
   // Spoonacular no documenta PUT para este endpoint.
-  Future<Map<String, dynamic>> putRecipe() async {
-    final uri = Uri.https(
+  Future<Map<String, dynamic>> putRecipe() async 
+  {
+    final uri = Uri.https
+    (
       _baseUrl,
       '/recipes/findByIngredients',
       {
@@ -146,7 +148,8 @@ class SpoonacularService {
 
   // PATCH: probar el método sobre la misma ruta.
   // Spoonacular no documenta PATCH para este endpoint.
-  Future<Map<String, dynamic>> patchRecipe() async {
+  Future<Map<String, dynamic>> patchRecipe() async 
+  {
     final uri = Uri.https(
       _baseUrl,
       '/recipes/findByIngredients',
@@ -156,7 +159,8 @@ class SpoonacularService {
       },
     );
 
-    final response = await http.patch(
+    final response = await http.patch
+    (
       uri,
       headers: _headers,
       body: jsonEncode({
