@@ -1,7 +1,7 @@
 //login
 import 'package:flutter/material.dart';
 import 'package:bcrypt/bcrypt.dart';
-import 'package:fridgerecipes/favoritos.dart';
+//import 'package:fridgerecipes/favoritos.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -10,6 +10,8 @@ crear un json, guardar arreglos con usuario, contra, guardar al menos
 -texto de crear cuenta, para que guarde un usuario en un json
 -al ingresar el usuario y password guardados, se inicie sesion
 -no es necesario crear otra pantalla, pero es opcional. (se hace mucho rollo)
+act lunes 09112026
+hacer la navegacion entre las tres pantallas, con los botones de abajo o con un menu de hamburguesa
 */
 class LoginScreen extends StatefulWidget
 {
@@ -167,12 +169,7 @@ Future<void> _login() async
       {
         if (!mounted) return;
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const Favoritos()
-          ),
-        );
+        Navigator.pushReplacementNamed(context, '/home');
 
         return;
       }
@@ -194,7 +191,7 @@ Future<void> _login() async
     (
       appBar: AppBar
       (
-        title: const Text('LoginApp')
+        title: const Text('LoginScreen')
       ),
       body: Padding
       (
@@ -235,7 +232,21 @@ Future<void> _login() async
             ),
             const SizedBox(height: 25),
             SizedBox(width: double.infinity,child: 
-            ElevatedButton(onPressed: _login, child: const Text("Entrar")),
+            /*
+            ElevatedButton
+            (
+              onpressed: ()
+              {
+                // .pushReplacementNamed borrar el historial
+                Navigator.pushReplacementNamed(context,'/main'):
+              },
+              child: const Text('Iniciar sesion'),
+            ) */
+            ElevatedButton
+            (
+              onPressed: _login, 
+              child: const Text("Entrar")
+            ),
             ),
             const SizedBox(height: 10),
             TextButton(onPressed: _registrar, child: const Text("Registrar")),

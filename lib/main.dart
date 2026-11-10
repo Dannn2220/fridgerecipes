@@ -1,8 +1,12 @@
 //import 'package:flutter/cupertino.dart';
+import 'dart:io';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter/material.dart';
-//import 'package:fridgerecipes/login.dart';
+import 'package:fridgerecipes/login.dart';
+import 'package:fridgerecipes/favoritos.dart';
 import 'package:fridgerecipes/services/spoonacular_services.dart';
 import 'dart:convert';
+import 'package:fridgerecipes/database/database_helper.dart';
 
 /*
 opciones de api:
@@ -12,8 +16,17 @@ o buscar directamente por ingredientesque el usuario selecciono
 hacer  btone s con las operacines de get post put patch delete hacia la api, y mostrar los resultados en la pantalla principal, o en otra pantalla, segun el caso
 */
 
-void main() 
+void main() async
 {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar sqflite_ffi para escritorio
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) 
+  {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   runApp(const MainApp());
 }
 class MainApp extends StatelessWidget 
@@ -26,7 +39,6 @@ class MainApp extends StatelessWidget
     return MaterialApp
     (
       themeMode: ThemeMode.dark,
-      home: PantallaPrincipal(),
       theme: ThemeData
       (
         brightness: Brightness.light, 
@@ -36,6 +48,15 @@ class MainApp extends StatelessWidget
       (
         brightness: Brightness.dark,
       ),
+      debugShowCheckedModeBanner: false,
+      title: "FridgeRecipes",
+      initialRoute: '/login',
+      routes: 
+      {
+        '/login':(context) => const LoginScreen(),
+        "/home":(context) => const PantallaPrincipal(),
+        "/favoritos":(context) => const Favoritos()
+      },
     );
   }
 }
@@ -346,6 +367,36 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   //  String _textoMostrado = '';
 //  bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
 
+  // Guardar una receta en favoritos
+  Future<void> _guardarFavorito(Map<String, dynamic> receta) async 
+  {
+    try {
+      final resultado = await DatabaseHelper.instance.insertarFavorito(
+        receta,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            resultado == -1
+                ? 'Esta receta ya está en tus favoritos.'
+                : 'Receta guardada en favoritos.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() 
   {
@@ -364,6 +415,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   {
     return Scaffold
     (
+      appBar: AppBar
+      (
+        title: const Text('PantallaMain')
+      ),
       body: Center
       (
         child: SingleChildScrollView( // Evita errores de espacio si el teclado se abre
@@ -607,7 +662,6 @@ const Text(
     fontWeight: FontWeight.bold,
   ),
 ),
-
 TextField(
   controller: _ctrlIngredientes,
   decoration: const InputDecoration(
@@ -615,7 +669,6 @@ TextField(
     hintText: 'Ejemplo: egg,tomato',
   ),
 ),
-
 ElevatedButton
 (
   onPressed: _cargandoGet ? null : _consultarRecetas,
@@ -626,7 +679,8 @@ ElevatedButton
 //hay que dar formato al json mostrado en pantalla, con indentacion de 2 espacios, y que sea seleccionable para copiarlo
 
 if (_resultadoGet != null &&
-    _resultadoGet!['data'] is List) ...[
+    _resultadoGet!['data'] is List) ...
+    [
 
   const SizedBox(height: 15),
 
@@ -657,14 +711,32 @@ if (_resultadoGet != null &&
 
           children: 
           [
-            Text
+            Row
             (
-              '${receta['title']} XDXDXD',
-              style: const TextStyle
-              (
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              children: [
+                Expanded(
+                  child: Text(
+                    '${receta['title']}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                IconButton(
+                  onPressed: () {
+                    _guardarFavorito(
+                      Map<String, dynamic>.from(receta),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.favorite_border,
+                    color: Colors.red,
+                  ),
+                  tooltip: 'Guardar en favoritos',
+                ),
+              ],
             ),
 
             const SizedBox(height: 8),
@@ -849,6 +921,34 @@ if (_resultadoDelete != null)
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar
+      (
+        currentIndex: 0,
+
+        onTap: (index)
+        {
+          if (index == 1)
+          {
+            Navigator.pushNamed(context, '/favoritos');
+          }
+        },
+
+        items:
+        const
+        [
+          BottomNavigationBarItem
+          (
+            icon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+
+          BottomNavigationBarItem
+          (
+            icon: Icon(Icons.favorite),
+            label: 'Favoritos',
+          ),
+        ],
       ),
     );
   }
