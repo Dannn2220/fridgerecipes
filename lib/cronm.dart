@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/cron.dart';
+import 'dart:math';
 
 class PantallaExtra extends StatelessWidget 
 {
@@ -42,29 +43,57 @@ class PantallaExtra extends StatelessWidget
                       fontWeight: FontWeight.w100,
                     ),
                   ),
-
                   // Elemento giratorio.
                   Expanded
                   (
-                    child: Center
+                    child: LayoutBuilder
                     (
-                      child: Transform.rotate
-                      (
-                        angle: cronometro.angulo,
-                        child: Container
+                      builder: (context, constraints) 
+                      {
+                        // Calcula el desplazamiento según la inclinación.
+                        final double desplazamientoX =
+                            cronometro.inclinada
+                                ? sin(cronometro.inclinacion) * constraints.maxWidth * 0.45
+                                : 0;
+                        final double desplazamientoY =
+                            cronometro.inclinada
+                                ? cos(cronometro.inclinacion) * constraints.maxHeight * 0.45
+                                : 0;
+                        return AnimatedContainer
                         (
-                          width: 190,
-                          height: 105,
-                          decoration: BoxDecoration
+                          duration: const Duration(milliseconds: 300),
+                          alignment: Alignment
                           (
-                            color: const Color.fromARGB(255, 72, 157, 57),
-                            borderRadius: BorderRadius.circular(100),
+                            cronometro.inclinada
+                                ? desplazamientoX / (constraints.maxWidth / 2)
+                                : 0,
+                            cronometro.inclinada
+                                ? desplazamientoY / (constraints.maxHeight / 2)
+                                : 0,
                           ),
-                        ),
-                      ),
+                          child: Transform.rotate
+                          (
+                            angle: cronometro.inclinada
+                                ? cronometro.inclinacion
+                                : cronometro.angulo,
+                            child: AnimatedContainer
+                            (
+                              duration: const Duration(milliseconds: 200),
+                              width: 190,
+                              height: 105,
+                              decoration: BoxDecoration
+                              (
+                                color: cronometro.alerta
+                                    ? Colors.red
+                                    : const Color.fromARGB(255, 72, 157, 57),
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-
                 ],
               ),
             );
