@@ -1,11 +1,15 @@
 //import 'package:flutter/cupertino.dart';
 import 'dart:io';
+
+import 'cronm.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:fridgerecipes/login.dart';
 import 'package:fridgerecipes/favoritos.dart';
 import 'package:fridgerecipes/services/spoonacular_services.dart';
+
 import 'dart:convert';
+
 import 'package:fridgerecipes/database/database_helper.dart';
 
 /*
@@ -16,7 +20,7 @@ o buscar directamente por ingredientesque el usuario selecciono
 hacer  btone s con las operacines de get post put patch delete hacia la api, y mostrar los resultados en la pantalla principal, o en otra pantalla, segun el caso
 */
 
-void main() async
+void main() async 
 {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -29,6 +33,7 @@ void main() async
 
   runApp(const MainApp());
 }
+
 class MainApp extends StatelessWidget 
 {
   const MainApp({super.key});
@@ -36,26 +41,19 @@ class MainApp extends StatelessWidget
   @override
   Widget build(BuildContext context) 
   {
-    return MaterialApp
-    (
+    return MaterialApp(
       themeMode: ThemeMode.dark,
-      theme: ThemeData
-      (
-        brightness: Brightness.light, 
-        primaryColor: Colors.red,
-      ),
-      darkTheme: ThemeData
-      (
-        brightness: Brightness.dark,
-      ),
+      theme: ThemeData(brightness: Brightness.light, primaryColor: Colors.red),
+      darkTheme: ThemeData(brightness: Brightness.dark),
       debugShowCheckedModeBanner: false,
       title: "FridgeRecipes",
       initialRoute: '/login',
       routes: 
       {
-        '/login':(context) => const LoginScreen(),
-        "/home":(context) => const PantallaPrincipal(),
-        "/favoritos":(context) => const Favoritos()
+        '/login': (context) => const LoginScreen(),
+        "/home": (context) => const PantallaPrincipal(),
+        "/favoritos": (context) => const Favoritos(),
+        "/extra": (context) => const PantallaExtra(),
       },
     );
   }
@@ -75,15 +73,15 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   // Controlador para leer lo que se escribe en la caja de texto
   final TextEditingController _ctrlTexto = TextEditingController();
 
-// Servicio de Spoonacular
+  // Servicio de Spoonacular
   final SpoonacularService _api = SpoonacularService();
 
-// Controladores para conectar al usuario
+  // Controladores para conectar al usuario
   final TextEditingController _ctrlUsuario = TextEditingController();
   final TextEditingController _ctrlNombre = TextEditingController();
   final TextEditingController _ctrlApellido = TextEditingController();
   final TextEditingController _ctrlCorreo = TextEditingController();
-  final TextEditingController _ctrlIngredientes =TextEditingController();
+  final TextEditingController _ctrlIngredientes = TextEditingController();
 
   bool _cargandoGet = false;
   Map<String, dynamic>? _resultadoGet;
@@ -104,18 +102,19 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   bool _cargando = false;
   Map<String, dynamic>? _resultadoApi;
 
-  Future<void> _conectarUsuario() async 
+  void _cerrarSesion(BuildContext context)
   {
-    setState(() 
-    {
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route)=>false);
+  }
+
+  Future<void> _conectarUsuario() async {
+    setState(() {
       _cargando = true;
       _resultadoApi = null;
     });
 
-    try 
-    {
-      final resultado = await _api.connectUser
-      (
+    try {
+      final resultado = await _api.connectUser(
         nombreUsuario: _ctrlUsuario.text.trim(),
         nombre: _ctrlNombre.text.trim(),
         apellido: _ctrlApellido.text.trim(),
@@ -124,256 +123,225 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
 
       if (!mounted) return;
 
-      setState(() 
-      {
+      setState(() {
         _resultadoApi = resultado;
       });
-
-    } 
-    catch (e) 
-    {
+    } catch (e) {
       if (!mounted) return;
 
-      setState(() 
-      {
-        _resultadoApi = 
-        {
-          'error': e.toString(),
-        };
+      setState(() {
+        _resultadoApi = {'error': e.toString()};
       });
-    } 
-    finally 
-    {
-      if (mounted) 
-      {
-        setState(() 
-        {
+    } finally {
+      if (mounted) {
+        setState(() {
           _cargando = false;
         });
       }
     }
   }
 
-  Future<void> _consultarRecetas() async 
-  {
-  setState(() {
-    _cargandoGet = true;
-    _resultadoGet = null;
-  });
+  Future<void> _consultarRecetas() async {
+    setState(() {
+      _cargandoGet = true;
+      _resultadoGet = null;
+    });
 
-  try {
-    final resultado = await _api.getRecipes
-    (
-      _ctrlIngredientes.text.trim(),
-    );
-//PARA AGREGAR UN TEXTO A LO QUE MUESTRA LA API
-    if (resultado['data'] is List) 
-    {
-      for (var receta in resultado['data']) 
-      {
-        if (receta is Map && receta['title'] is String) 
-        {
-          receta['title'] = '${receta['title']} ';//aqui al ultimo puedo agregar otro texto aparte xd
+    try {
+      final resultado = await _api.getRecipes(_ctrlIngredientes.text.trim());
+      //PARA AGREGAR UN TEXTO A LO QUE MUESTRA LA API
+      if (resultado['data'] is List) {
+        for (var receta in resultado['data']) {
+          if (receta is Map && receta['title'] is String) {
+            receta['title'] = '${receta['title']} '; //aqui al ultimo puedo agregar otro texto aparte xd
+          }
         }
       }
-    }
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _resultadoGet = resultado;
-    });
-  } catch (e) {
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoGet = {'error': e.toString()};
-    });
-  } finally {
-    if (mounted) {
       setState(() {
-        _cargandoGet = false;
+        _resultadoGet = resultado;
       });
-    }
-  }
-}
+    } catch (e) {
+      if (!mounted) return;
 
-  Future<void> _enviarReceta() async 
-  {
-  setState(() {
-    _cargandoPost = true;
-    _resultadoPost = null;
-  });
-
-  try {
-    final resultado = await _api.postRecipe();
-
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoPost = resultado;
-    });
-  } catch (e) {
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoPost = {'error': e.toString()};
-    });
-  } finally {
-    if (mounted) {
       setState(() {
-        _cargandoPost = false;
+        _resultadoGet = {'error': e.toString()};
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoGet = false;
+        });
+      }
     }
   }
-}
 
-  Future<void> _actualizarReceta() async 
-  {
-  setState(() {
-    _cargandoPut = true;
-    _resultadoPut = null;
-  });
-
-  try {
-    final resultado = await _api.putRecipe();
-
-    if (!mounted) return;
-
+  Future<void> _enviarReceta() async {
     setState(() {
-      _resultadoPut = resultado;
+      _cargandoPost = true;
+      _resultadoPost = null;
     });
-  } catch (e) {
-    if (!mounted) return;
 
-    setState(() {
-      _resultadoPut = {'error': e.toString()};
-    });
-  } finally {
-    if (mounted) {
+    try {
+      final resultado = await _api.postRecipe();
+
+      if (!mounted) return;
+
       setState(() {
-        _cargandoPut = false;
+        _resultadoPost = resultado;
       });
-    }
-  }
-}
+    } catch (e) {
+      if (!mounted) return;
 
-  Future<void> _modificarReceta() async 
-  {
-  setState(() {
-    _cargandoPatch = true;
-    _resultadoPatch = null;
-  });
-
-  try {
-    final resultado = await _api.patchRecipe();
-
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoPatch = resultado;
-    });
-  } catch (e) {
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoPatch = {'error': e.toString()};
-    });
-  } finally {
-    if (mounted) {
       setState(() {
-        _cargandoPatch = false;
+        _resultadoPost = {'error': e.toString()};
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoPost = false;
+        });
+      }
     }
   }
-}
 
-  Future<void> _crearElemento() async 
-  {
-  setState(() {
-    _cargandoDelete = true;
-    _resultadoDelete = null;
-  });
-
-  try {
-    final resultado = await _api.addMealPlanItem();
-
-    if (!mounted) return;
-
+  Future<void> _actualizarReceta() async {
     setState(() {
-      _resultadoDelete = resultado;
+      _cargandoPut = true;
+      _resultadoPut = null;
     });
-  } catch (e) {
-    if (!mounted) return;
 
-    setState(() {
-      _resultadoDelete = {'error': e.toString()};
-    });
-  } finally {
-    if (mounted) {
+    try {
+      final resultado = await _api.putRecipe();
+
+      if (!mounted) return;
+
       setState(() {
-        _cargandoDelete = false;
+        _resultadoPut = resultado;
       });
-    }
-  }
-}
+    } catch (e) {
+      if (!mounted) return;
 
-  Future<void> _eliminarElemento() async 
-  {
-  if (_api.mealPlanItemId == null) {
-    setState(() {
-      _resultadoDelete = {
-        'error': 'Primero debes crear un elemento.'
-      };
-    });
-    return;
-  }
-
-  setState(() {
-    _cargandoDelete = true;
-    _resultadoDelete = null;
-  });
-
-  try {
-    final resultado = await _api.deleteMealPlanItem(
-      _api.mealPlanItemId!,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoDelete = resultado;
-    });
-
-    if (resultado['statusCode'] == 200) {
-      _api.mealPlanItemId = null;
-    }
-  } catch (e) {
-    if (!mounted) return;
-
-    setState(() {
-      _resultadoDelete = {'error': e.toString()};
-    });
-  } finally {
-    if (mounted) {
       setState(() {
-        _cargandoDelete = false;
+        _resultadoPut = {'error': e.toString()};
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoPut = false;
+        });
+      }
     }
   }
-}
+
+  Future<void> _modificarReceta() async {
+    setState(() {
+      _cargandoPatch = true;
+      _resultadoPatch = null;
+    });
+
+    try {
+      final resultado = await _api.patchRecipe();
+
+      if (!mounted) return;
+
+      setState(() {
+        _resultadoPatch = resultado;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _resultadoPatch = {'error': e.toString()};
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoPatch = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _crearElemento() async {
+    setState(() {
+      _cargandoDelete = true;
+      _resultadoDelete = null;
+    });
+
+    try {
+      final resultado = await _api.addMealPlanItem();
+
+      if (!mounted) return;
+
+      setState(() {
+        _resultadoDelete = resultado;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _resultadoDelete = {'error': e.toString()};
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoDelete = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _eliminarElemento() async {
+    if (_api.mealPlanItemId == null) {
+      setState(() {
+        _resultadoDelete = {'error': 'Primero debes crear un elemento.'};
+      });
+      return;
+    }
+
+    setState(() {
+      _cargandoDelete = true;
+      _resultadoDelete = null;
+    });
+
+    try {
+      final resultado = await _api.deleteMealPlanItem(_api.mealPlanItemId!);
+
+      if (!mounted) return;
+
+      setState(() {
+        _resultadoDelete = resultado;
+      });
+
+      if (resultado['statusCode'] == 200) {
+        _api.mealPlanItemId = null;
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _resultadoDelete = {'error': e.toString()};
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoDelete = false;
+        });
+      }
+    }
+  }
 
   // Variable donde se guardará el texto que se mostrara abajo
   //  String _textoMostrado = '';
-//  bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
+  //  bool _isCupertinoStyle = false; // Variable para controlar el estilo del switch
 
   // Guardar una receta en favoritos
-  Future<void> _guardarFavorito(Map<String, dynamic> receta) async 
-  {
+  Future<void> _guardarFavorito(Map<String, dynamic> receta) async {
     try {
-      final resultado = await DatabaseHelper.instance.insertarFavorito(
-        receta,
-      );
+      final resultado = await DatabaseHelper.instance.insertarFavorito(receta);
 
       if (!mounted) return;
 
@@ -389,11 +357,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
     }
   }
 
@@ -413,23 +378,33 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   @override
   Widget build(BuildContext context) 
   {
-    return Scaffold
-    (
-      appBar: AppBar
-      (
-        title: const Text('PantallaMain')
-      ),
-      body: Center
-      (
-        child: SingleChildScrollView( // Evita errores de espacio si el teclado se abre
-          child: Padding
-          (
-            padding: const EdgeInsets.all(16.0), // Margen a los lados para la caja de texto
-            child: Column
-            (
+    return Scaffold(
+      appBar: AppBar(title: const Text('Inicio'),titleTextStyle: TextStyle(color: Color.fromARGB(204, 50, 227, 165)),),
+      body: Center(
+        child: SingleChildScrollView(
+          // Evita errores de espacio si el teclado se abre
+          child: Padding(
+            padding: const EdgeInsets.all(
+              16.0,
+            ), // Margen a los lados para la caja de texto
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>
               [
+                ElevatedButton.icon
+                (
+                  style: ElevatedButton.styleFrom
+                  (
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.exit_to_app),
+                  label: const Text('Salir'),
+                  onPressed: ()
+                  {
+                    _cerrarSesion(context);
+                  },
+                ),
                 /*
                  Switch
                 (
@@ -580,11 +555,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                 const Text
                 (
                   'CONEXIÓN CON SPOONACULAR API',
-                  style: TextStyle
-                  (
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 15),
                 TextField
@@ -631,269 +602,252 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
                 ElevatedButton
                 (
                   onPressed: _cargando ? null : _conectarUsuario,
-                  child: Text
-                  (
-                    _cargando ? 'Conectando...' : 'Conectar usuario',
-                  ),
+                  child: Text(_cargando ? 'Conectando...' : 'Conectar usuario'),
                 ),
                 const SizedBox(height: 20),
                 if (_resultadoApi != null)
-                Container
-                (
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration
+                  Container
                   (
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: SelectableText
-                  (
-                    const JsonEncoder.withIndent('  ')
-                    .convert(_resultadoApi),
-                  ),
-                ),
-                const Divider(height: 40),
-
-const Text(
-  'MÉTODO GET - CONSULTAR RECETAS',
-  style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  ),
-),
-TextField(
-  controller: _ctrlIngredientes,
-  decoration: const InputDecoration(
-    labelText: 'Ingredientes',
-    hintText: 'Ejemplo: egg,tomato',
-  ),
-),
-ElevatedButton
-(
-  onPressed: _cargandoGet ? null : _consultarRecetas,
-  child: Text(
-    _cargandoGet ? 'Consultando...' : 'Consultar recetas',
-  ),
-),
-//hay que dar formato al json mostrado en pantalla, con indentacion de 2 espacios, y que sea seleccionable para copiarlo
-
-if (_resultadoGet != null &&
-    _resultadoGet!['data'] is List) ...
-    [
-
-  const SizedBox(height: 15),
-
-  const Text(
-    'RESULTADOS DE RECETAS',
-    style: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-
-  ...(_resultadoGet!['data'] as List).map((receta) {
-
-    final ingredientesUsados =
-        receta['usedIngredients'] as List? ?? [];
-
-    final ingredientesFaltantes =
-        receta['missedIngredients'] as List? ?? [];
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: 
-          [
-            Row
-            (
-              children: [
-                Expanded(
-                  child: Text(
-                    '${receta['title']}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration
+                    (
+                      color: Colors.black12,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SelectableText
+                    (
+                      const JsonEncoder.withIndent('  ').convert(_resultadoApi),
                     ),
                   ),
-                ),
+                const Divider(height: 40),
 
-                IconButton(
-                  onPressed: () {
-                    _guardarFavorito(
-                      Map<String, dynamic>.from(receta),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.favorite_border,
-                    color: Colors.red,
+                const Text
+                (
+                  'MÉTODO GET - CONSULTAR RECETAS',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                TextField
+                (
+                  controller: _ctrlIngredientes,
+                  decoration: const InputDecoration
+                  (
+                    labelText: 'Ingredientes',
+                    hintText: 'Ejemplo: egg,tomato',
                   ),
-                  tooltip: 'Guardar en favoritos',
                 ),
-              ],
-            ),
+                ElevatedButton
+                (
+                  onPressed: _cargandoGet ? null : _consultarRecetas,
+                  child: Text
+                  (
+                    _cargandoGet ? 'Consultando...' : 'Consultar recetas',
+                  ),
+                ),
+                //hay que dar formato al json mostrado en pantalla, con indentacion de 2 espacios, y que sea seleccionable para copiarlo
 
-            const SizedBox(height: 8),
+                if (_resultadoGet != null &&
+                    _resultadoGet!['data'] is List) ...[
+                  const SizedBox(height: 15),
 
-            Text('Identificador: ${receta['id']}'),
+                  const Text
+                  (
+                    'RESULTADOS DE RECETAS',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
 
-            Text
-            (
-              'Ingredientes disponibles: '
-              '${receta['usedIngredientCount']}',
-            ),
+                  ...(_resultadoGet!['data'] as List).map((receta) 
+                  {
+                    final ingredientesUsados =
+                        receta['usedIngredients'] as List? ?? [];
 
-            Text
-            (
-              'Ingredientes faltantes: '
-              '${receta['missedIngredientCount']}',
-            ),
+                    final ingredientesFaltantes =
+                        receta['missedIngredients'] as List? ?? [];
 
-            const Divider(),
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
 
-            const Text
-            (
-              'Ingredientes que tienes:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+                      child: Padding
+                      (
+                        padding: const EdgeInsets.all(12),
 
-            ...ingredientesUsados.map
-            (
-              (ingrediente) => Text
-              (
-                '• ${ingrediente['name']}',
-              ),
-            ),
+                        child: Column
+                        (
+                          crossAxisAlignment: CrossAxisAlignment.start,
 
-            const SizedBox(height: 8),
+                          children: [
+                            Row(
+                              children: [
+                                Expanded
+                                (
+                                  child: Text
+                                  (
+                                    '${receta['title']}',
+                                    style: const TextStyle
+                                    (
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
 
-            const Text
-            (
-              'Ingredientes que te faltan:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+                                IconButton
+                                (
+                                  onPressed: () 
+                                  {
+                                    _guardarFavorito
+                                    (
+                                      Map<String, dynamic>.from(receta),
+                                    );
+                                  },
+                                  icon: const Icon
+                                  (
+                                    Icons.favorite_border,
+                                    color: Colors.green,
+                                  ),
+                                  tooltip: 'Guardar en favoritos',
+                                ),
+                              ],
+                            ),
 
-            ...ingredientesFaltantes.map
-            (
-              (ingrediente) => Text
-              (
-                '• ${ingrediente['name']}',
-              ),
-            ),
+                            const SizedBox(height: 8),
 
-          ],
-        ),
-      ),
-    );
-  }),
-],
-const Divider(height: 40),
+                            Text('Identificador: ${receta['id']}'),
 
-const Text
-(
-  'MÉTODO POST - ANALIZAR RECETA',
-  style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  ),
-),
+                            Text
+                            (
+                              'Ingredientes disponibles: '
+                              '${receta['usedIngredientCount']}',
+                            ),
 
+                            Text
+                            (
+                              'Ingredientes faltantes: '
+                              '${receta['missedIngredientCount']}',
+                            ),
 
-ElevatedButton(
-  onPressed: _cargandoPost ? null : _enviarReceta,
-  child: Text(
-    _cargandoPost ? 'Enviando...' : 'Enviar receta',
-  ),
-),
+                            const Divider(),
 
-if (_resultadoPost != null)
-  SelectableText(
-    const JsonEncoder.withIndent('  ')
-        .convert(_resultadoPost),
-  ),
+                            const Text
+                            (
+                              'Ingredientes que tienes:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
 
-  const Divider(height: 40),
+                            ...ingredientesUsados.map
+                            (
+                              (ingrediente) => Text('• ${ingrediente['name']}'),
+                            ),
 
-const Text(
-  'MÉTODO PUT - ACTUALIZAR RECETA',
-  style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  ),
-),
+                            const SizedBox(height: 8),
 
-ElevatedButton(
-  onPressed: _cargandoPut ? null : _actualizarReceta,
-  child: Text(
-    _cargandoPut ? 'Enviando...' : 'Probar PUT',
-  ),
-),
+                            const Text
+                            (
+                              'Ingredientes que te faltan:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
 
-if (_resultadoPut != null)
-  SelectableText(
-    const JsonEncoder.withIndent('  ')
-        .convert(_resultadoPut),
-  ),
+                            ...ingredientesFaltantes.map
+                            (
+                              (ingrediente) => Text('• ${ingrediente['name']}'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+                const Divider(height: 40),
 
-const Divider(height: 40),
+                const Text
+                (
+                  'MÉTODO POST - ANALIZAR RECETA',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
 
-const Text(
-  'MÉTODO PATCH - MODIFICAR RECETA',
-  style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  ),
-),
+                ElevatedButton
+                (
+                  onPressed: _cargandoPost ? null : _enviarReceta,
+                  child: Text(_cargandoPost ? 'Enviando...' : 'Enviar receta'),
+                ),
 
-ElevatedButton(
-  onPressed: _cargandoPatch ? null : _modificarReceta,
-  child: Text(
-    _cargandoPatch ? 'Enviando...' : 'Probar PATCH',
-  ),
-),
+                if (_resultadoPost != null)
+                  SelectableText
+                  (
+                    const JsonEncoder.withIndent('  ').convert(_resultadoPost),
+                  ),
 
-if (_resultadoPatch != null)
-  SelectableText(
-    const JsonEncoder.withIndent('  ')
-        .convert(_resultadoPatch),
-  ),
-const Divider(height: 40),
+                const Divider(height: 40),
 
-const Text(
-  'MÉTODO DELETE - ELIMINAR ELEMENTO',
-  style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  ),
-),
+                const Text
+                (
+                  'MÉTODO PUT - ACTUALIZAR RECETA',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
 
-ElevatedButton(
-  onPressed: _cargandoDelete ? null : _crearElemento,
-  child: const Text('Crear elemento de prueba'),
-),
+                ElevatedButton
+                (
+                  onPressed: _cargandoPut ? null : _actualizarReceta,
+                  child: Text(_cargandoPut ? 'Enviando...' : 'Probar PUT'),
+                ),
 
-ElevatedButton(
-  onPressed: _cargandoDelete ? null : _eliminarElemento,
-  child: const Text('Eliminar elemento'),
-),
+                if (_resultadoPut != null)
+                  SelectableText
+                  (
+                    const JsonEncoder.withIndent('  ').convert(_resultadoPut),
+                  ),
 
-if (_resultadoDelete != null)
-  SelectableText(
-    const JsonEncoder.withIndent('  ')
-        .convert(_resultadoDelete),
-  ),
+                const Divider(height: 40),
+
+                const Text
+                (
+                  'MÉTODO PATCH - MODIFICAR RECETA',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                ElevatedButton
+                (
+                  onPressed: _cargandoPatch ? null : _modificarReceta,
+                  child: Text(_cargandoPatch ? 'Enviando...' : 'Probar PATCH'),
+                ),
+
+                if (_resultadoPatch != null)
+                  SelectableText
+                  (
+                    const JsonEncoder.withIndent('  ').convert(_resultadoPatch),
+                  ),
+                const Divider(height: 40),
+
+                const Text
+                (
+                  'MÉTODO DELETE - ELIMINAR ELEMENTO',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                ElevatedButton
+                (
+                  onPressed: _cargandoDelete ? null : _crearElemento,
+                  child: const Text('Crear elemento de prueba'),
+                ),
+
+                ElevatedButton
+                (
+                  onPressed: _cargandoDelete ? null : _eliminarElemento,
+                  child: const Text('Eliminar elemento'),
+                ),
+
+                if (_resultadoDelete != null)
+                  SelectableText
+                  (
+                    const JsonEncoder.withIndent('  ')
+                        .convert(_resultadoDelete),
+                  ),
                 /*
                 future<map<string, dynamic>> replacePost()
                   nose que mas
-
-                 */
-/*              //timer que actualice cada 500 milisegundos el color del texto mostrado
+                */
+                /*
+                //timer que actualice cada 500 milisegundos el color del texto mostrado
                 const SizedBox(height: 16),
                 StreamBuilder<Color>
                 (
@@ -916,7 +870,8 @@ if (_resultadoDelete != null)
                       textAlign: TextAlign.center,
                     );
                   },
-                ),*/
+                ),
+              */
               ],
             ),
           ),
@@ -926,27 +881,31 @@ if (_resultadoDelete != null)
       (
         currentIndex: 0,
 
-        onTap: (index)
+        onTap: (index) 
         {
-          if (index == 1)
+          if (index == 1) 
           {
             Navigator.pushNamed(context, '/favoritos');
           }
+          else if (index == 2) 
+          {
+            Navigator.pushNamed(context, '/extra');
+          }
         },
 
-        items:
-        const
+        items: const 
         [
-          BottomNavigationBarItem
-          (
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
 
           BottomNavigationBarItem
           (
-            icon: Icon(Icons.favorite),
+            icon: Icon(Icons.favorite/*save, dinnig, bookmark */),
             label: 'Favoritos',
+          ),
+          BottomNavigationBarItem
+          (
+            icon: Icon(Icons.extension),
+            label: 'Extra',
           ),
         ],
       ),
