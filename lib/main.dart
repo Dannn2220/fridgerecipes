@@ -4,7 +4,6 @@ import 'dart:io';
 import 'cronm.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter/material.dart';
-import 'package:fridgerecipes/login.dart';
 import 'package:fridgerecipes/favoritos.dart';
 import 'package:fridgerecipes/services/spoonacular_services.dart';
 
@@ -47,10 +46,9 @@ class MainApp extends StatelessWidget
       darkTheme: ThemeData(brightness: Brightness.dark),
       debugShowCheckedModeBanner: false,
       title: "FridgeRecipes",
-      initialRoute: '/login',
+      initialRoute: '/home',
       routes: 
       {
-        '/login': (context) => const LoginScreen(),
         "/home": (context) => const PantallaPrincipal(),
         "/favoritos": (context) => const Favoritos(),
         "/extra": (context) => const PantallaExtra(),
@@ -102,10 +100,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
   bool _cargando = false;
   Map<String, dynamic>? _resultadoApi;
 
-  void _cerrarSesion(BuildContext context)
-  {
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route)=>false);
-  }
 
   Future<void> _conectarUsuario() async {
     setState(() {
@@ -391,20 +385,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal>
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>
               [
-                ElevatedButton.icon
-                (
-                  style: ElevatedButton.styleFrom
-                  (
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.exit_to_app),
-                  label: const Text('Salir'),
-                  onPressed: ()
-                  {
-                    _cerrarSesion(context);
-                  },
-                ),
                 /*
                  Switch
                 (
