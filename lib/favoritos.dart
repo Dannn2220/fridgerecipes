@@ -55,95 +55,124 @@ class _FavoritosState extends State<Favoritos>
   @override
   Widget build(BuildContext context) 
   {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favoritos'),
+    return Scaffold
+    (
+      appBar: AppBar
+      (
+        title: const Text('Favoritos'),titleTextStyle: TextStyle(color: Color.fromARGB(204, 50, 227, 165)),
       ),
 
-      body: _cargando
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : _favoritos.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Todavía no tienes recetas favoritas.',
-                  ),
+      body: _cargando ? const Center
+      (
+        child: CircularProgressIndicator(),
+      )
+      : _favoritos.isEmpty ? const Center
+      (
+        child: Text
+        (
+          'Todavía no tienes recetas favoritas.',
+        ),
+      )
+      : ListView.builder
+      (
+        padding: const EdgeInsets.all(12),
+        itemCount: _favoritos.length,
+        itemBuilder: (context, index) 
+        {
+          final receta = _favoritos[index];
+
+          final imagen = receta['imagen'] as String?;
+
+          return Card
+          (
+            margin: const EdgeInsets.symmetric
+            (
+              vertical: 8,
+            ),
+            child: ListTile
+            (
+              leading: imagen != null && imagen.isNotEmpty ? Image.network
+              (
+                imagen,
+                width: 65,
+                height: 65,
+                fit: BoxFit.cover,
+                errorBuilder:
+                (
+                  context, error, stackTrace
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: _favoritos.length,
-                  itemBuilder: (context, index) {
-
-                    final receta = _favoritos[index];
-
-                    final imagen = receta['imagen'] as String?;
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 8,
-                      ),
-                      child: ListTile(
-                        leading: imagen != null &&
-                                imagen.isNotEmpty
-                            ? Image.network(
-                                imagen,
-                                width: 65,
-                                height: 65,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.restaurant,
-                                    size: 40,
-                                  );
-                                },
-                              )
-                            : const Icon(
-                                Icons.restaurant,
-                                size: 40,
-                              ),
-
-                        title: Text(
-                          receta['titulo'] ?? 'Sin título',
-                        ),
-
-                        subtitle: Text(
-                          'ID: ${receta['recetaId']}',
-                        ),
-
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                          ),
-                          onPressed: () {
-                            _eliminarFavorito(
-                              receta['recetaId'] as int,
-                            );
-                          },
-                        ),
-                      ),
+                  {
+                    return const Icon
+                    (
+                      Icons.restaurant,
+                      size: 40,
                     );
                   },
+              )
+              : const Icon
+              (
+                Icons.restaurant,
+                size: 40,
+              ),
+              title: Text
+              (
+                receta['titulo'] ?? 'Sin título',
+              ),
+              subtitle: Text
+              (
+                'ID: ${receta['recetaId']}',
+              ),
+
+              trailing: IconButton
+              (
+                icon: const Icon
+                (
+                  Icons.delete,
+                  color: Colors.red,
                 ),
+                onPressed: () 
+                {
+                  _eliminarFavorito
+                  (
+                    receta['recetaId'] as int,
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
 
       bottomNavigationBar: BottomNavigationBar
       (
         currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) {
+        onTap: (index) 
+        {
+          if (index == 0) 
+          {
             Navigator.pop(context);
           }
+          else if (index == 2) 
+          {
+          Navigator.pushReplacementNamed(context, '/extra');
+          }
         },
-        items: const [
-          BottomNavigationBarItem(
+        items: const 
+        [
+          BottomNavigationBarItem
+          (
             icon: Icon(Icons.home),
             label: 'Inicio',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
+          BottomNavigationBarItem
+          (
+            icon: Icon(Icons.favorite/*save, dinnig, bookmark */),
             label: 'Favoritos',
+          ),
+          BottomNavigationBarItem
+          (
+            icon: Icon(Icons.extension),
+            label: 'Extra',
           ),
         ],
       ),
