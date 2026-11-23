@@ -1,7 +1,6 @@
-//login
 import 'package:flutter/material.dart';
 import 'package:bcrypt/bcrypt.dart';
-//import 'package:fridgerecipes/favoritos.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -45,7 +44,7 @@ void dispose()
   // Obtener la ubicación del archivo JSON
   Future<File> _obtenerArchivo() async
   {
-    final directorio = Directory.current;
+    final directorio = await getApplicationDocumentsDirectory();
 
     return File('${directorio.path}/usuarios.json');
   }
@@ -69,9 +68,7 @@ void dispose()
   }
 
   // Guardar los usuarios en el JSON
-  Future<void> _guardarUsuarios(
-    List<Map<String, dynamic>> usuarios
-  ) async
+  Future<void> _guardarUsuarios(List<Map<String, dynamic>> usuarios) async
   {
     final archivo = await _obtenerArchivo();
 
@@ -79,69 +76,70 @@ void dispose()
 
     await archivo.writeAsString(contenido);
   }
-  Future<void> _registrar() async
-{
-  String usuario = userController.text.trim();
-  String password = pswController.text;
 
-  if (usuario.isEmpty || password.isEmpty)
+  Future<void> _registrar() async 
   {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Completa todos los campos")
-      ),
+    String usuario = userController.text.trim();
+    String password = pswController.text;
+
+    if (usuario.isEmpty || password.isEmpty)
+    {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Completa todos los campos")
+        ),
+      );
+      return;
+    }
+
+    List<Map<String, dynamic>> usuarios = await _leerUsuarios();
+
+    // Comprobar si el usuario ya existe
+    bool existe = usuarios.any(
+      (u) => u['usuario'].toString().toLowerCase() ==
+            usuario.toLowerCase()
     );
-    return;
-  }
 
-  List<Map<String, dynamic>> usuarios = await _leerUsuarios();
+    if (existe)
+    {
+      if (!mounted) return;
 
-  // Comprobar si el usuario ya existe
-  bool existe = usuarios.any(
-    (u) => u['usuario'].toString().toLowerCase() ==
-           usuario.toLowerCase()
-  );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Este usuario ya existe")
+        ),
+      );
+      return;
+    }
 
-  if (existe)
-  {
+    // Generar hash de la contraseña
+    String hash = BCrypt.hashpw(
+      password,
+      BCrypt.gensalt()
+    );
+
+    // Agregar el nuevo usuario
+    usuarios.add(
+      {
+        "usuario": usuario,
+        "passwordHash": hash
+      }
+    );
+
+    // Guardar los cambios
+    await _guardarUsuarios(usuarios);
+
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Este usuario ya existe")
+        content: Text("Usuario registrado correctamente")
       ),
     );
-    return;
+
+    userController.clear();
+    pswController.clear();
   }
-
-  // Generar hash de la contraseña
-  String hash = BCrypt.hashpw(
-    password,
-    BCrypt.gensalt()
-  );
-
-  // Agregar el nuevo usuario
-  usuarios.add(
-    {
-      "usuario": usuario,
-      "passwordHash": hash
-    }
-  );
-
-  // Guardar los cambios
-  await _guardarUsuarios(usuarios);
-
-  if (!mounted) return;
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text("Usuario registrado correctamente")
-    ),
-  );
-
-  userController.clear();
-  pswController.clear();
-}
 
   final userController = TextEditingController();
   final pswController = TextEditingController();
@@ -184,6 +182,7 @@ Future<void> _login() async
     ),
   );
 }
+
   @override
   Widget build(BuildContext context) 
   {
