@@ -55,7 +55,7 @@ class SpoonacularService {
       'email': correo,
     };
 
-    print('API Key configurada: ${_apiKey.isNotEmpty}');
+//    print('API Key configurada: ${_apiKey.isNotEmpty}');
 
     final response = await http.post(
       uri,

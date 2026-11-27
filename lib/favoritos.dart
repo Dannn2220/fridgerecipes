@@ -168,7 +168,9 @@ class _FavoritosState extends State<Favoritos>
         crossAxisAlignment: CrossAxisAlignment.start,
         children:
         [
-          Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
+          Padding
+          (
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
             child: Column
             (
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,7 +293,8 @@ class _FavoritosState extends State<Favoritos>
                                   ),
 
                                   // Corazón y papelera.
-                                  Icon(
+                                  Icon
+                                  (
                                     Icons.favorite,
                                     color: Colors.redAccent,
                                     size: 21,
@@ -299,8 +302,10 @@ class _FavoritosState extends State<Favoritos>
 
                                   IconButton(
                                     tooltip: 'Eliminar favorito',
-                                    onPressed: () {
-                                      _confirmarEliminacion(
+                                    onPressed: () 
+                                    {
+                                      _confirmarEliminacion
+                                      (
                                         (receta['recetaId'] as num).toInt(),
                                       );
                                     },
@@ -331,9 +336,9 @@ class _FavoritosState extends State<Favoritos>
           {
             Navigator.pop(context);
           }
-          else if (index == 2) 
+          else
           {
-          Navigator.pushReplacementNamed(context, '/extra');
+          Navigator.pushReplacementNamed(context, '/favoritos');
           }
         },
         items: const 
@@ -350,12 +355,6 @@ class _FavoritosState extends State<Favoritos>
             activeIcon: Icon(Icons.favorite),
             label: 'Favoritos',
           ),
-          BottomNavigationBarItem
-          (
-            icon: Icon(Icons.extension),
-            activeIcon: Icon(Icons.extension),
-            label: 'Extra',
-          ),
         ],
       ),
     );
@@ -365,11 +364,13 @@ class _FavoritosState extends State<Favoritos>
   // Imagen alternativa si no se puede cargar la fotografía.
   Widget _imagenAlternativa() 
   {
-    return Container(
+    return Container
+    (
       width: 85,
       height: 85,
       color: verdeClaro.withOpacity(0.25),
-      child: Icon(
+      child: Icon
+      (
         Icons.restaurant,
         color: verde,
         size: 35,
